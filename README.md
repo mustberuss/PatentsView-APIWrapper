@@ -2,14 +2,14 @@ PatentsView API Wrapper
 ===================================
 
 The purpose of this API Wrapper is to extend the functionality of the 
-[PatentsView API](patentsview.org/api/). The wrapper can take in a list of 
+[PatentsView API](https://patentsview.org/apis/api-endpoints). The wrapper can take in a list of 
 values (such as patent numbers), retrieve multiple data points, and then convert
 and merge the results into a CSV file. 
 
 ## How To Use the API Wrapper
 1. Clone or download this repository
 ```bash
-git clone https://github.com/CSSIP-AIR/PatentsView-APIWrapper.git
+git clone https://github.com/PatentsView/PatentsView-APIWrapper.git
 ```
 
 2. Install dependencies
@@ -20,7 +20,16 @@ pip install -r requirements.txt
 
 3. Modify the sample config file `sample_config.cfg` or create a copy with your own configuration settings
 
-4. Run the API Wrapper using Python 3:
+4. Add your API Key as an evironmental variable.  In windows: 
+```bash
+set PATENTSVIEW_API_KEY="<your api key>"
+```
+In unix:
+```bash
+export PATENTSVIEW_API_KEY="<your api key>"
+```
+
+5. Run the API Wrapper using Python 3:
 ```bash
 python api_wrapper.py sample_config.cfg
 ```
@@ -38,9 +47,13 @@ The type of object you want to return. This must be one of the PatentsView API e
     "inventors"
     "assignees"
     "locations"
-    "cpc_subsections"
-    "uspc_mainclasses"
-    "nber_subcategories"
+    "cpc_subsection"
+    "uspc_mainclass"
+    "uspc_subclass"
+    "nber_category"
+    "nber_subcategory"
+    "application_citation"
+    "patent_citation"
 ```
 
 ### Input File
@@ -70,7 +83,7 @@ Common input types include:
 ```
 
 ### Fields
-The fields that will be returned in the results. Valid fields for each endpoint can be found in the [PatentsView API Documentation](https://api.patentsview.org/doc.html). Fields should be specified as an array of strings, such as:
+The fields that will be returned in the results. Valid fields for each endpoint can be found in the [PatentsView API Documentation](https://patentsview.org/apis/api-endpoints). Fields should be specified as an array of strings, such as:
 
 ```fields = ["patent_number", "patent_title", "patent_date"]```
 
@@ -95,6 +108,27 @@ To sort first by patent_date (descending), and then by patent title (ascending):
 
 ```sort = [{"patent_date": "desc"}, {"patent_title":, "asc"}]```
 
+## Chaining (Optional)
+Note that you can put more than one query in your configuration file and the output of one query can be used as input to another query.  In this example, the output of the first query (QUERY1.csv) becomes the input file for QUERY2.
+
+```
+[QUERY1]
+entity = "patents"
+input_file = "sample_patents.txt"
+directory = "/Users/jsennett/Code/PatentsView-APIWrapper"
+input_type = "patent_number"
+fields = ["cited_patent_number"]
+criteria = {"_not":{"cited_patent_number":"None"}}
+
+[QUERY2]
+entity = "patents"
+input_file = "QUERY1.csv"
+directory = "/Users/jsennett/Code/PatentsView-APIWrapper"
+input_type = "patent_number"
+fields = ["assignee_id", "assignee_organization", "assignee_first_name", "assignee_last_name"]
+criteria = {"_not":{"assignee_id":"None"}}
+```
+
 ## Compatibility
 
 The API wrapper is currently compatible with Python 3.
@@ -107,8 +141,8 @@ Attribution should be given to PatentsView for use, distribution, or derivative 
 
 ## See also
 
-[USPTO PatentsView](https://www.patentsview.org/web/#viz/relationships)
+[USPTO PatentsView](https://datatool.patentsview.org/#viz/relationships)
 
 [PatentsView API](https://api.patentsview.org/doc.html)
 
-[PatentsView Query Language](https://api.patentsview.org/query-language.html)
+[PatentsView Query Language](https://patentsview.org/apis/api-endpoints)

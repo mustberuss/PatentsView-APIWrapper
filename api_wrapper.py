@@ -6,9 +6,9 @@ import requests
 import json_to_csv
 import sys
 import pandas as pd
+import time
 
-
-def query(configfile):
+def query(configfile, api_key):
     # Query the PatentsView database using parameters specified in configfile
     parser = configparser.ConfigParser()
     parser.read(configfile)
@@ -20,8 +20,8 @@ def query(configfile):
 
         # Parse parameters from config file
         entity = json.loads(parser.get(q, 'entity'))
-        url = 'https://api.patentsview.org/'+entity+'/query?'
-
+        url = 'https://search.patentsview.org/api/v1/'+entity+'/'
+        print("url is {}".format(url))
         input_file = json.loads(parser.get(q, 'input_file'))
         directory = json.loads(parser.get(q, 'directory'))
         input_type = json.loads(parser.get(q, 'input_type'))
@@ -55,25 +55,41 @@ def query(configfile):
         results_found = 0
 
         item_list_len = len(item_list)
-        # request the maximum of 10000 matches per query and page forward as necessary
-        per_page = 10000
+        # request the maximum of 1000 matches per query and page forward as necessary
+        per_page = 1000
 
         for item in item_list:
             count = per_page
             page = 1
             while count == per_page:
+                offset = (page - 1) * per_page
                 params = {
                     'q': {"_and": [{input_type: item}, criteria]},
                     'f': fields,
-                    'o': {"per_page": per_page, "page": page}
+                    'o': {"size": per_page, "offset": offset}
                     }
 
-                r = requests.post(url, data=json.dumps(params))
+                #print(params)
+                headers = {
+                    'X-Api-Key': api_key,
+                    'User-Agent': 'PatentsView-APIWrapper'
+                }
+
+                r = requests.post(url, headers=headers, json=params)
+
+                # sleep then retry on a 429 Too many requests
+		if 429 == r.status_code:
+		    time.sleep(r.headers["Retry-After"])  # Number of seconds to wait before sending next request
+                    r = requests.post(url, headers=headers, json=params)
+
                 page += 1
                 count = 0
 
                 if 400 <= r.status_code <= 499:
-                    print("Client error when quering for value {}".format(item))
+                    if 403 == r.status_code:
+                        print("Incorrect/Missing API Key for value {}".format(item))
+                    else:
+                        print("Client error {} when quering for value {}".format(r.status_code,item))
                 elif r.status_code >= 500:
                     print("Server error when quering for value {}. You may be exceeding the maximum API request size (1GB).".format(item))
                 else:
@@ -112,4 +128,10 @@ if __name__ == '__main__':
     if not os.path.isfile(sys.argv[1]):
         print("File not found: ", sys.argv[1])
 
-    query(sys.argv[1])
+    api_key = os.getenv('PATENTSVIEW_API_KEY')
+    
+    if api_key == None:
+        print("Please set environmental variable PATENTSVIEW_API_KEY to your api key")
+        sys.exit(1)
+
+    query(sys.argv[1], api_key)
