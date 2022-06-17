@@ -78,8 +78,8 @@ def query(configfile, api_key):
                 r = requests.post(url, headers=headers, json=params)
 
                 # sleep then retry on a 429 Too many requests
-		if 429 == r.status_code:
-		    time.sleep(r.headers["Retry-After"])  # Number of seconds to wait before sending next request
+                if 429 == r.status_code:
+                    time.sleep(r.headers["Retry-After"])  # Number of seconds to wait before sending next request
                     r = requests.post(url, headers=headers, json=params)
 
                 page += 1
