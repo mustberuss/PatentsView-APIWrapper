@@ -89,7 +89,9 @@ def query(configfile, api_key):
                     if 403 == r.status_code:
                         print("Incorrect/Missing API Key for value {}".format(item))
                     else:
-                        print("Client error {} when quering for value {}".format(r.status_code,item))
+                        print("Client error {} when quering for value {}".format
+(r.status_code,item))
+                        print(r.headers["X-Status-Reason"])
                 elif r.status_code >= 500:
                     print("Server error when quering for value {}. You may be exceeding the maximum API request size (1GB).".format(item))
                 else:
