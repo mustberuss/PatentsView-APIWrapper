@@ -53,7 +53,8 @@ def writeCSV(a, filename):
                 "cpc_subgroups", "cpc_subsections", "cpcs", "IPCs", 
                 "locations", "nber_subcategories","nbers","patents",
                 "uspc_mainclasses", "uspc_subclasses","uspcs","years", 
-                "rawinventors","wipos","gov_interests"]
+                "rawinventors","wipos","gov_interests","patent_citations","nber_categories",
+                "cpc_groups","uspc_subclasses","assignees"]
     key = list(a.keys())
     key = list(set(groups).intersection(set(key)))
     j = a[key[0]]
