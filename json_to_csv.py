@@ -97,7 +97,7 @@ def writeCSV(a, filename):
  
 def merge_csv(fd,q,requests):
     diri = [d for d in os.listdir(fd) if re.search(q+'_\d+.csv',d)]
-    csv_out = open(os.path.join(fd, q+'.csv'), 'w')
+    csv_out = open(os.path.join(fd, q+'.csv'), 'w', encoding=ENCODING)
     for line in open(os.path.join(fd,q+'_0.csv'), 'rb').read().decode(ENCODING, errors='ignore'):
         csv_out.write(line)
     for i in range(requests):
@@ -115,7 +115,7 @@ def main(fd, q, requests):
     diri = [d for d in os.listdir(fd) if re.search(q+'_\d+.json',d)]
     for d in diri:
         filename = fd + '/' + d
-        data = open(filename, "r").read()
+        data = open(filename, "r", encoding=ENCODING).read()
         try:
             b = json.loads(data)
         except:
