@@ -102,10 +102,7 @@ def merge_csv(fd,q,requests):
         csv_out.write(line)
     for i in range(requests):
         f = open(os.path.join(fd, q+'_'+str(i)+'.csv'), 'r+', encoding=ENCODING)
-        if sys.version_info >= (3,):
-            next(f)
-        else:
-            f.next()
+        next(f)
         for line in f:
             csv_out.write(line)
         f.close()
@@ -118,8 +115,8 @@ def main(fd, q, requests):
         data = open(filename, "r", encoding=ENCODING).read()
         try:
             b = json.loads(data)
-        except:
-            print("ERROR")
+        except Exception as e:
+            print("ERROR", e)
             sys.exit(1)
         filename = filename.replace('.json', '.csv')
         writeCSV(b, filename)
